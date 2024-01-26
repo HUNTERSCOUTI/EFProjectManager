@@ -8,7 +8,7 @@ public class Program
 {
     static void Main(string[] args)
     {
-        seedTasks();
+        //seedTasks();
 
         using var db = new BloggingContext();
 
@@ -24,6 +24,8 @@ public class Program
                 Console.WriteLine($"  Todo: {todo.Name}, Completed: {todo.IsCompleted}");
             }
         }
+
+        printIncompleteTasksAndTodos();
     }
 
     static void seedTasks()
@@ -60,5 +62,24 @@ public class Program
         db.SaveChanges();
     }
 
+    static void printIncompleteTasksAndTodos()
+    {
+        using var db = new BloggingContext();
+
+        var incompleteTasks = db.Tasks
+                .Include(task => task.Todos)
+                .Where(task => task.Todos.Any(todo => !todo.IsCompleted))
+                .ToList();
+
+        Console.WriteLine("\n\nIncompleted Tasks And Todos:");
+        foreach (var task in incompleteTasks)
+        {
+            Console.WriteLine($"Task: {task.Name}");
+            foreach (var todo in task.Todos.Where(todo => !todo.IsCompleted))
+            {
+                Console.WriteLine($" Todo: {todo.Name}");
+            }
+        }
+    }
 }
 
